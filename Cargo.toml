@@ -1,0 +1,10 @@
+[package]
+name = "pm-backup-script"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dropbox-sdk = { git = "https://github.com/dropbox/dropbox-sdk-rust" }
+dotenv = { git = "https://github.com/dotenv-rs/dotenv" }
