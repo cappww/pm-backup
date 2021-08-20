@@ -1,3 +1,5 @@
+extern crate cronjob;
+use cronjob::CronJob;
 use dotenv::dotenv;
 use dropbox_sdk::files::{self, WriteMode};
 use dropbox_sdk::files::{Metadata, CommitInfo};
@@ -8,15 +10,26 @@ use std::io::{BufRead, BufReader};
 use std::fs::File;
 
 fn main() {
-    dotenv().ok();
-    let auth = dropbox_sdk::oauth2::get_auth_from_env_or_prompt();
-    let client = UserAuthDefaultClient::new(auth);
+    //dotenv().ok();
+
+
+    let mut cron = CronJob::new("Dropbox Backup", on_cron);
+    cron.minutes("2");
+    cron.hours("*");
+    cron.day_of_month("*");
+    cron.day_of_week("*");
+    cron.start_job();
 
     // let file_names = dbx_list_files(&client, "");
     // println!("{:?}", file_names)
+}
 
-    dbx_upload_file(&client, "/foo.txt");
-}   
+fn on_cron(name: &str) {
+    let auth = dropbox_sdk::oauth2::get_auth_from_env_or_prompt();
+    let client = UserAuthDefaultClient::new(auth);
+
+    dbx_upload_file(&client, "/pass-keys.bcup");
+}
 
 fn dbx_list_files (client: &UserAuthDefaultClient, path: &str) -> Vec<String> {
     let folder_path = files::ListFolderArg::new(path.to_string());
@@ -45,12 +58,13 @@ fn dbx_upload_file(client: &UserAuthDefaultClient, path: &str) {
     let file = File::open(local_path).expect("problem opening file");
 
     let mut reader = BufReader::new(file);
-    let buf = reader.fill_buf().expect("failed to read file");
+    let mut buf = Vec::new();
+    reader.read_to_end(&mut buf).expect("failed to read file");
+    println!("buf.len(): {}", buf.len());
     
     let mut arg = CommitInfo::new(path.to_string());
     arg.mode = WriteMode::Overwrite;
-    
-    let result = files::upload(client, &arg, buf)
+    let result = files::upload(client, &arg, &buf)
         .expect("There was an error with uploading")
         .expect("There was an error with uploading");
 
