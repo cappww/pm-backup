@@ -1,5 +1,5 @@
 [package]
-name = "pm-backup-script"
+name = "pm-backup"
 version = "0.1.0"
 edition = "2018"
 
@@ -9,3 +9,4 @@ edition = "2018"
 dropbox-sdk = { git = "https://github.com/dropbox/dropbox-sdk-rust" }
 dotenv = { git = "https://github.com/dotenv-rs/dotenv" }
 cronjob = "*"
+chrono = "*"

@@ -1,0 +1,19 @@
+version: "3"
+
+volumes:
+  files:
+    driver: local
+
+services:
+  pm-backup: 
+    image: pm-backup
+    container_name: pm-backup
+    volumes: 
+      - files:/mnt/data
+
+  ubuntu:
+    image: ubuntu:latest
+    container_name: ubuntu
+    command: /bin/sh -c "while true; do date; sleep 1; done"
+    volumes: 
+      - files:/mnt/data
