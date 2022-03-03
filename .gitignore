@@ -1,5 +1,8 @@
 /target
+
 .env*
+
+*.bcup
 
 # Added by cargo
 #

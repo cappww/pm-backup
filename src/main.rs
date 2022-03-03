@@ -15,7 +15,7 @@ fn main() {
     // cron.day_of_month("*");
     // cron.start_job();
 
-    let mut cron = CronJob::new("Hello World", hello_world);
+    let mut cron = CronJob::new("Dropbox Backup", on_cron);
     cron.seconds("*");
     cron.minutes("*");
     cron.hours("*");
@@ -32,7 +32,8 @@ fn on_cron(name: &str) {
     let auth = dropbox_sdk::oauth2::get_auth_from_env_or_prompt();
     let client = UserAuthDefaultClient::new(auth);
 
-    dbx_upload_file(&client, "/pass-keys.bcup");
+    // dbx_upload_file(&client, "/pass-keys.bcup");
+    println!("Hello world");
 }
 
 fn dbx_list_files(client: &UserAuthDefaultClient, path: &str) -> Vec<String> {
