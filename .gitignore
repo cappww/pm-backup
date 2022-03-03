@@ -2,6 +2,7 @@
 
 .env*
 
+buttercup
 *.bcup
 
 # Added by cargo

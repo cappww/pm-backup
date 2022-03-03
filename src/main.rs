@@ -1,12 +1,17 @@
+extern crate walkdir;
 extern crate cronjob;
+extern crate zip;
 use chrono::prelude::Utc;
 use cronjob::CronJob;
 use dotenv::dotenv;
 use dropbox_sdk::default_client::UserAuthDefaultClient;
 use dropbox_sdk::files::{self, Metadata};
+use std::fs;
 use std::fs::File;
-use std::io::BufReader;
-use std::io::Read;
+use std::io::{BufReader, Read};
+use std::os::unix::prelude;
+use walkdir::WalkDir;
+mod write_dir;
 
 fn main() {
     dotenv().ok();
@@ -15,11 +20,22 @@ fn main() {
     // cron.day_of_month("*");
     // cron.start_job();
 
-    let mut cron = CronJob::new("Dropbox Backup", on_cron);
-    cron.seconds("*");
-    cron.minutes("*");
-    cron.hours("*");
-    cron.start_job();
+    // let mut cron = CronJob::new("Dropbox Backup", on_cron);
+    // cron.seconds("*");
+    // cron.minutes("*");
+    // cron.hours("*");
+    // cron.start_job();
+
+    let auth = dropbox_sdk::oauth2::get_auth_from_env_or_prompt();
+    let client = UserAuthDefaultClient::new(auth);
+
+    // let file_names = dbx_list_files(&client,"");
+    // print!("{:?}", file_names)
+
+
+    let mut method = zip::CompressionMethod::Bzip2;
+
+    write_dir::doit("./buttercup", "./buttercup.zip", method);  
 }
 
 fn hello_world(name: &str) {
@@ -54,20 +70,30 @@ fn dbx_list_files(client: &UserAuthDefaultClient, path: &str) -> Vec<String> {
 }
 
 fn dbx_upload_file(client: &UserAuthDefaultClient, path: &str) {
-    let mut local_path = path.to_string();
-    local_path.insert_str(0, ".");
-    let file = File::open(local_path).expect("problem opening file");
+    let file = File::open(path).expect("problem opening file");
 
     let mut reader = BufReader::new(file);
     let mut buf = Vec::new();
     reader.read_to_end(&mut buf).expect("failed to read file");
     println!("buf.len(): {}", buf.len());
 
-    let mut arg = files::CommitInfo::new(path.to_string());
+    let mut dbx_path = path.to_string();
+    dbx_path.remove(0);
+
+    let mut arg = files::CommitInfo::new(dbx_path);
     arg.mode = files::WriteMode::Overwrite;
     let result = files::upload(client, &arg, &buf)
         .expect("There was an error with uploading")
         .expect("There was an error with uploading");
 
     println!("result: {:?}", result);
+}
+
+fn dbx_upload_folder(client: &UserAuthDefaultClient, path: &str) {
+    for file in WalkDir::new(&path).into_iter().filter_map(|file| file.ok()) {
+        if file.metadata().unwrap().is_file() {
+            let file_name = file.path().display().to_string();
+            dbx_upload_file(client, &file_name);
+        }
+    }
 }

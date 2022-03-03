@@ -10,3 +10,5 @@ dropbox-sdk = { git = "https://github.com/dropbox/dropbox-sdk-rust" }
 dotenv = { git = "https://github.com/dotenv-rs/dotenv" }
 cronjob = "*"
 chrono = "*"
+walkdir = "*"
+zip = "*"
